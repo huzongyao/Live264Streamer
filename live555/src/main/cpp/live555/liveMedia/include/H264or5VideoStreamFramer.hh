@@ -51,7 +51,8 @@ public:
 protected:
   H264or5VideoStreamFramer(int hNumber, // 264 or 265
 			   UsageEnvironment& env, FramedSource* inputSource,
-			   Boolean createParser, Boolean includeStartCodeInOutput);
+			   Boolean createParser,
+			   Boolean includeStartCodeInOutput, Boolean insertAccessUnitDelimiters);
       // We're an abstract base class.
   virtual ~H264or5VideoStreamFramer();
 
@@ -66,8 +67,12 @@ protected:
   Boolean isPPS(u_int8_t nal_unit_type);
   Boolean isVCL(u_int8_t nal_unit_type);
 
+protected: // redefined virtual functions
+  virtual void doGetNextFrame();
+
 protected:
   int fHNumber;
+  Boolean fIncludeStartCodeInOutput, fInsertAccessUnitDelimiters;
   u_int8_t* fLastSeenVPS;
   unsigned fLastSeenVPSSize;
   u_int8_t* fLastSeenSPS;

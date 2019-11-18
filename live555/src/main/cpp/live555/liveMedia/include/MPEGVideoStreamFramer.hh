@@ -52,7 +52,7 @@ protected:
   void setTimeCode(unsigned hours, unsigned minutes, unsigned seconds,
 		   unsigned pictures, unsigned picturesSinceLastGOP);
 
-private: // redefined virtual functions
+protected: // redefined virtual functions
   virtual void doGetNextFrame();
   virtual void doStopGettingFrames();
 

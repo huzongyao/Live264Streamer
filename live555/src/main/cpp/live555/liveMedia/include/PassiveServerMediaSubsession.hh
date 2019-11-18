@@ -74,8 +74,6 @@ protected: // redefined virtual functions
 
 protected:
   char* fSDPLines;
-
-private:
   RTPSink& fRTPSink;
   RTCPInstance* fRTCPInstance;
   HashTable* fClientRTCPSourceRecords; // indexed by client session id; used to implement RTCP "RR" handling

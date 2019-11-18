@@ -15,31 +15,32 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 **********/
 // "liveMedia"
 // Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
-// A filter that breaks up a H.265 Video Elementary Stream into NAL units.
-// C++ header
 
-#ifndef _H265_VIDEO_STREAM_FRAMER_HH
-#define _H265_VIDEO_STREAM_FRAMER_HH
 
-#ifndef _H264_OR_5_VIDEO_STREAM_FRAMER_HH
-#include "H264or5VideoStreamFramer.hh"
+#ifndef _JPEG2000_VIDEO_RTP_SINK_HH
+#define _JPEG2000_VIDEO_RTP_SINK_HH
+
+#ifndef _VIDEO_RTP_SINK_HH
+#include "VideoRTPSink.hh"
 #endif
 
-class H265VideoStreamFramer: public H264or5VideoStreamFramer {
+class JPEG2000VideoRTPSink: public VideoRTPSink {
 public:
-  static H265VideoStreamFramer* createNew(UsageEnvironment& env, FramedSource* inputSource,
-					  Boolean includeStartCodeInOutput = False,
-					  Boolean insertAccessUnitDelimiters = False);
+  static JPEG2000VideoRTPSink* createNew(UsageEnvironment& env, Groupsock* RTPgs);
 
 protected:
-  H265VideoStreamFramer(UsageEnvironment& env, FramedSource* inputSource,
-			Boolean createParser,
-			Boolean includeStartCodeInOutput, Boolean insertAccessUnitDelimiters);
-      // called only by "createNew()"
-  virtual ~H265VideoStreamFramer();
+  JPEG2000VideoRTPSink(UsageEnvironment& env, Groupsock* RTPgs);
+	// called only by createNew()
 
-  // redefined virtual functions:
-  virtual Boolean isH265VideoStreamFramer() const;
+  virtual ~JPEG2000VideoRTPSink();
+
+private: // redefined virtual functions:
+  virtual void doSpecialFrameHandling(unsigned fragmentationOffset,
+                                      unsigned char* frameStart,
+                                      unsigned numBytesInFrame,
+                                      struct timeval framePresentationTime,
+                                      unsigned numRemainingBytes);
+  virtual unsigned specialHeaderSize() const;
 };
 
 #endif

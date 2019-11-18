@@ -37,6 +37,7 @@ MatroskaFileParser::MatroskaFileParser(MatroskaFile& ourFile, FramedSource* inpu
   if (ourDemux == NULL) {
     // Initialization
     fCurrentParseState = PARSING_START_OF_FILE;
+
     continueParsing();
   } else {
     fCurrentParseState = LOOKING_FOR_CLUSTER;
@@ -91,8 +92,6 @@ void MatroskaFileParser
 
 void MatroskaFileParser::continueParsing() {
   if (fInputSource != NULL) {
-    if (fInputSource->isCurrentlyAwaitingData()) return; // Our input source is currently being read. Wait until that read completes
-
     if (!parse()) {
       // We didn't complete the parsing, because we had to read more data from the source, or because we're waiting for
       // another read from downstream.  Once that happens, we'll get called again.
@@ -107,9 +106,14 @@ void MatroskaFileParser::continueParsing() {
 Boolean MatroskaFileParser::parse() {
   Boolean areDone = False;
 
+  if (fInputSource->isCurrentlyAwaitingData()) return False;
+      // Our input source is currently being read. Wait until that read completes
   try {
     skipRemainingHeaderBytes(True); // if any
     do {
+      if (fInputSource->isCurrentlyAwaitingData()) return False;
+          // Our input source is currently being read. Wait until that read completes
+
       switch (fCurrentParseState) {
         case PARSING_START_OF_FILE: {
 	  areDone = parseStartOfFile();

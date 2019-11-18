@@ -2,7 +2,8 @@ package com.hzy.live.streamer.service;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import com.blankj.utilcode.util.LogUtils;
 import com.hzy.live.streamer.consts.StreamerAction;

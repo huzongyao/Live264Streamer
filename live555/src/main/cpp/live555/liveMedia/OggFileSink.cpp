@@ -52,7 +52,7 @@ OggFileSink::OggFileSink(UsageEnvironment& env, FILE* fid,
 			 unsigned samplingFrequency, char const* configStr,
 			 unsigned bufferSize, char const* perFrameFileNamePrefix)
   : FileSink(env, fid, bufferSize, perFrameFileNamePrefix),
-    fSamplingFrequency(samplingFrequency), fConfigStr(configStr),
+    fSamplingFrequency(samplingFrequency), fConfigStr(strDup(configStr)),
     fHaveWrittenFirstFrame(False), fHaveSeenEOF(False),
     fGranulePosition(0), fGranulePositionAdjustment(0), fPageSequenceNumber(0),
     fIsTheora(False), fGranuleIncrementPerFrame(1),
@@ -78,6 +78,7 @@ OggFileSink::~OggFileSink() {
   OggFileSink::addData(fAltBuffer, fAltFrameSize, fAltPresentationTime);
 
   delete[] fAltBuffer;
+  delete[] (char*)fConfigStr;
 }
 
 Boolean OggFileSink::continuePlaying() {

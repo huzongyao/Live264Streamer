@@ -24,7 +24,6 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #if defined(__WIN32__) || defined(_WIN32) || defined(_QNX4)
 #define snprintf _snprintf
 #endif
-#define HACK_FOR_CHROME_WEBRTC_BUG 1 //#####@@@@@
 
 ////////// RTCPMemberDatabase //////////
 

@@ -15,31 +15,39 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 **********/
 // "liveMedia"
 // Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
-// A filter that breaks up a H.265 Video Elementary Stream into NAL units.
-// C++ header
 
-#ifndef _H265_VIDEO_STREAM_FRAMER_HH
-#define _H265_VIDEO_STREAM_FRAMER_HH
+#ifndef _JPEG2000_VIDEO_RTP_SOURCE_HH
+#define _JPEG2000_VIDEO_RTP_SOURCE_HH
 
-#ifndef _H264_OR_5_VIDEO_STREAM_FRAMER_HH
-#include "H264or5VideoStreamFramer.hh"
+#ifndef _MULTI_FRAMED_RTP_SOURCE_HH
+#include "MultiFramedRTPSource.hh"
 #endif
 
-class H265VideoStreamFramer: public H264or5VideoStreamFramer {
+class JPEG2000VideoRTPSource: public MultiFramedRTPSource {
 public:
-  static H265VideoStreamFramer* createNew(UsageEnvironment& env, FramedSource* inputSource,
-					  Boolean includeStartCodeInOutput = False,
-					  Boolean insertAccessUnitDelimiters = False);
+  static JPEG2000VideoRTPSource* createNew(UsageEnvironment& env, Groupsock* RTPgs,
+					   unsigned char rtpPayloadFormat,
+					   unsigned rtpTimestampFrequency,
+					   char const* sampling);
 
 protected:
-  H265VideoStreamFramer(UsageEnvironment& env, FramedSource* inputSource,
-			Boolean createParser,
-			Boolean includeStartCodeInOutput, Boolean insertAccessUnitDelimiters);
-      // called only by "createNew()"
-  virtual ~H265VideoStreamFramer();
+  virtual ~JPEG2000VideoRTPSource();
 
+protected:
+  JPEG2000VideoRTPSource(UsageEnvironment& env, Groupsock* RTPgs,
+			 unsigned char rtpPayloadFormat,
+			 unsigned rtpTimestampFrequency,
+			 char const* sampling);
+    // called only by createNew()
+
+private:
   // redefined virtual functions:
-  virtual Boolean isH265VideoStreamFramer() const;
+  virtual Boolean processSpecialHeader(BufferedPacket* packet,
+                                       unsigned& resultSpecialHeaderSize);
+  virtual char const* MIMEtype() const;
+
+private:
+  char* fSampling;
 };
 
 #endif

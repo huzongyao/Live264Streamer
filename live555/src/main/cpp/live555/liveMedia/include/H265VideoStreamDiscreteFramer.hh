@@ -31,10 +31,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 class H265VideoStreamDiscreteFramer: public H264or5VideoStreamDiscreteFramer {
 public:
   static H265VideoStreamDiscreteFramer*
-  createNew(UsageEnvironment& env, FramedSource* inputSource, Boolean includeStartCodeInOutput = False);
+  createNew(UsageEnvironment& env, FramedSource* inputSource,
+	    Boolean includeStartCodeInOutput = False, Boolean insertAccessUnitDelimiters = False);
 
 protected:
-  H265VideoStreamDiscreteFramer(UsageEnvironment& env, FramedSource* inputSource, Boolean includeStartCodeInOutput);
+  H265VideoStreamDiscreteFramer(UsageEnvironment& env, FramedSource* inputSource,
+				Boolean includeStartCodeInOutput, Boolean insertAccessUnitDelimiters);
       // called only by createNew()
   virtual ~H265VideoStreamDiscreteFramer();
 

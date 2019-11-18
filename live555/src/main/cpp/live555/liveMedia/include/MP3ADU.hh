@@ -91,7 +91,4 @@ private:
   class SegmentQueue* fSegments;
 };
 
-// Definitions of external C functions that implement various MP3 operations:
-extern "C" int mp3ZeroOutSideInfo(unsigned char*, unsigned, unsigned);
-
 #endif

@@ -57,7 +57,7 @@ void MPEGVideoStreamFramer::flushInput() {
 
 void MPEGVideoStreamFramer::reset() {
   fPictureCount = 0;
-  fPictureEndMarker = False;
+  fPictureEndMarker = True; // So that we start looking as if we'd just ended an 'access unit'
   fPicturesAdjustment = 0;
   fPictureTimeBase = 0.0;
   fTcSecsBase = 0;

@@ -64,6 +64,9 @@ Boolean MediaSource::isJPEGVideoSource() const {
 Boolean MediaSource::isAMRAudioSource() const {
   return False; // default implementation
 }
+Boolean MediaSource::isMPEG2TransportStreamMultiplexor() const {
+  return False; // default implementation
+}
 
 Boolean MediaSource::lookupByName(UsageEnvironment& env,
 				  char const* sourceName,

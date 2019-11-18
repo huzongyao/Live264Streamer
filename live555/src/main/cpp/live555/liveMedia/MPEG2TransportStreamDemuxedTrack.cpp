@@ -15,28 +15,20 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 **********/
 // "liveMedia"
 // Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
-// A filter that breaks up a H.264 Video Elementary Stream into NAL units.
+// A media track, demultiplexed from a MPEG Transport Stream file
 // Implementation
 
-#include "H264VideoStreamFramer.hh"
+#include "MPEG2TransportStreamParser.hh"
 
-H264VideoStreamFramer* H264VideoStreamFramer
-::createNew(UsageEnvironment& env, FramedSource* inputSource,
-	    Boolean includeStartCodeInOutput, Boolean insertAccessUnitDelimiters) {
-  return new H264VideoStreamFramer(env, inputSource, True,
-				   includeStartCodeInOutput, insertAccessUnitDelimiters);
+MPEG2TransportStreamDemuxedTrack
+::MPEG2TransportStreamDemuxedTrack(MPEG2TransportStreamParser& ourParser, u_int16_t pid)
+  : FramedSource(ourParser.envir()),
+    fOurParser(ourParser), fPID(pid) {
 }
 
-H264VideoStreamFramer
-::H264VideoStreamFramer(UsageEnvironment& env, FramedSource* inputSource, Boolean createParser,
-			Boolean includeStartCodeInOutput, Boolean insertAccessUnitDelimiters)
-  : H264or5VideoStreamFramer(264, env, inputSource, createParser,
-			     includeStartCodeInOutput, insertAccessUnitDelimiters) {
+MPEG2TransportStreamDemuxedTrack::~MPEG2TransportStreamDemuxedTrack() {
 }
 
-H264VideoStreamFramer::~H264VideoStreamFramer() {
-}
-
-Boolean H264VideoStreamFramer::isH264VideoStreamFramer() const {
-  return True;
+void MPEG2TransportStreamDemuxedTrack::doGetNextFrame() {
+  fOurParser.continueParsing();
 }

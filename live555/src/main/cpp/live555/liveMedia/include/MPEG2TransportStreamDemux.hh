@@ -15,31 +15,36 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 **********/
 // "liveMedia"
 // Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
-// A filter that breaks up a H.265 Video Elementary Stream into NAL units.
+// Demultiplexer for a MPEG Transport Stream
 // C++ header
 
-#ifndef _H265_VIDEO_STREAM_FRAMER_HH
-#define _H265_VIDEO_STREAM_FRAMER_HH
+#ifndef _MPEG2_TRANSPORT_STREAM_DEMUX_HH
+#define _MPEG2_TRANSPORT_STREAM_DEMUX_HH
 
-#ifndef _H264_OR_5_VIDEO_STREAM_FRAMER_HH
-#include "H264or5VideoStreamFramer.hh"
+#ifndef _FRAMED_SOURCE_HH
+#include "FramedSource.hh"
 #endif
 
-class H265VideoStreamFramer: public H264or5VideoStreamFramer {
+class MPEG2TransportStreamDemux: public Medium {
 public:
-  static H265VideoStreamFramer* createNew(UsageEnvironment& env, FramedSource* inputSource,
-					  Boolean includeStartCodeInOutput = False,
-					  Boolean insertAccessUnitDelimiters = False);
+  static MPEG2TransportStreamDemux* createNew(UsageEnvironment& env,
+					      FramedSource* inputSource,
+					      FramedSource::onCloseFunc* onCloseFunc,
+					      void* onCloseClientData);
 
-protected:
-  H265VideoStreamFramer(UsageEnvironment& env, FramedSource* inputSource,
-			Boolean createParser,
-			Boolean includeStartCodeInOutput, Boolean insertAccessUnitDelimiters);
-      // called only by "createNew()"
-  virtual ~H265VideoStreamFramer();
+private:
+  MPEG2TransportStreamDemux(UsageEnvironment& env, FramedSource* inputSource,
+			    FramedSource::onCloseFunc* onCloseFunc, void* onCloseClientData);
+      // called only by createNew()
+  virtual ~MPEG2TransportStreamDemux();
 
-  // redefined virtual functions:
-  virtual Boolean isH265VideoStreamFramer() const;
+  static void handleEndOfFile(void* clientData);
+  void handleEndOfFile();
+
+private:
+  class MPEG2TransportStreamParser* fParser;
+  FramedSource::onCloseFunc* fOnCloseFunc;
+  void* fOnCloseClientData;
 };
 
 #endif

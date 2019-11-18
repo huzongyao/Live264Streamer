@@ -11,10 +11,11 @@ import android.media.MediaFormat;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Build;
-import android.support.annotation.NonNull;
 import android.util.DisplayMetrics;
 import android.view.Surface;
 import android.view.WindowManager;
+
+import androidx.annotation.NonNull;
 
 public class H264VDisplayEncoder extends BaseMediaEncoder {
     private static final int FRAME_RATE = 15;
