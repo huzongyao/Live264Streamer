@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // RTP Sinks
 // Implementation
 
@@ -70,7 +70,7 @@ RTPSink::~RTPSink() {
   delete fTransmissionStatsDB;
   delete[] (char*)fRTPPayloadFormatName;
   fRTPInterface.forgetOurGroupsock();
-    // so that the "fRTCPInterface" destructor doesn't turn off background read handling (in case
+    // so that the "fRTPInterface" destructor doesn't turn off background read handling (in case
     // its 'groupsock' is being shared with something else that does background read handling).
 }
 
@@ -184,7 +184,7 @@ RTPTransmissionStatsDB::~RTPTransmissionStatsDB() {
 }
 
 void RTPTransmissionStatsDB
-::noteIncomingRR(u_int32_t SSRC, struct sockaddr_in const& lastFromAddress,
+::noteIncomingRR(u_int32_t SSRC, struct sockaddr_storage const& lastFromAddress,
                  unsigned lossStats, unsigned lastPacketNumReceived,
                  unsigned jitter, unsigned lastSRTime, unsigned diffSR_RRTime) {
   RTPTransmissionStats* stats = lookup(SSRC);
@@ -259,7 +259,7 @@ RTPTransmissionStats::RTPTransmissionStats(RTPSink& rtpSink, u_int32_t SSRC)
 RTPTransmissionStats::~RTPTransmissionStats() {}
 
 void RTPTransmissionStats
-::noteIncomingRR(struct sockaddr_in const& lastFromAddress,
+::noteIncomingRR(struct sockaddr_storage const& lastFromAddress,
 		 unsigned lossStats, unsigned lastPacketNumReceived,
 		 unsigned jitter, unsigned lastSRTime,
 		 unsigned diffSR_RRTime) {

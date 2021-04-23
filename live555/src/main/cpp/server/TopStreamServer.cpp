@@ -17,7 +17,7 @@ TopStreamServer::createNew() {
 }
 
 void TopStreamServer::addUserRecord(char const *userName, char const *password) {
-    if (mAuthDB == NULL) {
+    if (mAuthDB == nullptr) {
         mAuthDB = new UserAuthenticationDatabase;
     }
     mAuthDB->addUserRecord(userName, password);
@@ -30,7 +30,7 @@ void TopStreamServer::doEventLoop() {
     LOGI("TopStreamServer::Loop End!");
     if (mStreamUrl) {
         delete[] mStreamUrl;
-        mStreamUrl = NULL;
+        mStreamUrl = nullptr;
     }
     Medium::close(mH264FramedSource);
     mMediaSession->deleteAllSubsessions();
@@ -63,12 +63,12 @@ int TopStreamServer::startServer(int port, const char *streamName) {
     mScheduler = BasicTaskScheduler::createNew();
     mEnv = BasicUsageEnvironment::createNew(*mScheduler);
     mRTSPServer = RTSPServer::createNew(*mEnv, (u_int16_t) port, mAuthDB);
-    if (mRTSPServer == NULL) {
+    if (mRTSPServer == nullptr) {
         LOGE("Failed to create RTSP server: %s", mEnv->getResultMsg());
         return -1;
     }
     mH264FramedSource = H264ArrayFramedSource::createNew(*mEnv, 32, true);
-    if (mH264FramedSource == NULL) {
+    if (mH264FramedSource == nullptr) {
         LOGE("Failed to create H264ArrayFramedSource!");
         return -1;
     }
@@ -83,7 +83,6 @@ int TopStreamServer::startServer(int port, const char *streamName) {
                 UnicastServerMediaSubsession::createNew(*mEnv, replicator);
         mMediaSession->addSubsession(subSession);
         mRTSPServer->addServerMediaSession(mMediaSession);
-
         mStreamUrl = mRTSPServer->rtspURL(mMediaSession);
         LOGE("Play Stream on URL : [%s]", mStreamUrl);
     }

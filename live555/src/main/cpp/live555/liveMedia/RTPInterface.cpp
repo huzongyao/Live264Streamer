@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // An abstraction of a network interface used for RTP (or RTCP).
 // (This allows the RTP-over-TCP hack (RFC 2326, section 10.12) to
 // be implemented transparently.)
@@ -28,6 +28,18 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 // Helper routines and data structures, used to implement
 // sending/receiving RTP/RTCP over a TCP socket:
+
+class tcpStreamRecord {
+  public:
+  tcpStreamRecord(int streamSocketNum, unsigned char streamChannelId,
+                  tcpStreamRecord* next);
+  virtual ~tcpStreamRecord();
+
+public:
+  tcpStreamRecord* fNext;
+  int fStreamSocketNum;
+  unsigned char fStreamChannelId;
+};
 
 // Reading RTP-over-TCP is implemented using two levels of hash tables.
 // The top-level hash table maps TCP socket numbers to a
@@ -251,7 +263,7 @@ void RTPInterface
 }
 
 Boolean RTPInterface::handleRead(unsigned char* buffer, unsigned bufferMaxSize,
-				 unsigned& bytesRead, struct sockaddr_in& fromAddress,
+				 unsigned& bytesRead, struct sockaddr_storage& fromAddress,
 				 int& tcpSocketNum, unsigned char& tcpStreamChannelId,
 				 Boolean& packetReadWasIncomplete) {
   packetReadWasIncomplete = False; // by default
@@ -493,7 +505,7 @@ Boolean SocketDescriptor::tcpReadHandler1(int mask) {
   // However, because the socket is being read asynchronously, this data might arrive in pieces.
   
   u_int8_t c;
-  struct sockaddr_in fromAddress;
+  struct sockaddr_storage fromAddress;
   if (fTCPReadingState != AWAITING_PACKET_DATA) {
     int result = readSocket(fEnv, fOurSocketNum, &c, 1, fromAddress);
     if (result == 0) { // There was no more data to read

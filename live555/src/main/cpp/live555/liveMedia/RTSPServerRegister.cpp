@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A RTSP server
 // Implementation of functionality related to the "REGISTER" and "DEREGISTER" commands
 
@@ -58,7 +58,7 @@ public:
     if (resultCode == 0) {
       // The "REGISTER" request succeeded, so use the still-open RTSP socket to await incoming commands from the remote endpoint:
       int sock;
-      struct sockaddr_in remoteAddress;
+      struct sockaddr_storage remoteAddress;
 
       grabConnection(sock, remoteAddress);
       if (sock >= 0) {
@@ -76,7 +76,7 @@ public:
     }
 
     // We're completely done with the REGISTER command now, so delete ourself now:
-    delete this;
+    Medium::close(this);
   }
 
 private:
@@ -104,12 +104,14 @@ unsigned RTSPServer::registerStream(ServerMediaSession* serverMediaSession,
     authenticator = new Authenticator(username, password);
   }
   unsigned requestId = ++fRegisterOrDeregisterRequestCounter;
+  char const* url = rtspURL(serverMediaSession);
   new RegisterRequestRecord(*this, requestId,
-			    remoteClientNameOrAddress, remoteClientPortNum, rtspURL(serverMediaSession),
+			    remoteClientNameOrAddress, remoteClientPortNum, url,
 			    responseHandler, authenticator,
 			    receiveOurStreamViaTCP, proxyURLSuffix);
   
-  delete authenticator; // we can do this here because it was copied to the "RegisterRequestRecord"
+  delete[] (char*)url; // we can do this here because it was copied to the "RegisterRequestRecord" 
+  delete authenticator; // ditto
   return requestId;
 }
 
@@ -152,7 +154,7 @@ public:
     }
 
     // We're completely done with the DEREGISTER command now, so delete ourself now:
-    delete this;
+    Medium::close(this);
   }
 
 private:
@@ -180,12 +182,14 @@ unsigned RTSPServer::deregisterStream(ServerMediaSession* serverMediaSession,
     authenticator = new Authenticator(username, password);
   }
   unsigned requestId = ++fRegisterOrDeregisterRequestCounter;
+  char const* url = rtspURL(serverMediaSession);
   new DeregisterRequestRecord(*this, requestId,
-			      remoteClientNameOrAddress, remoteClientPortNum, rtspURL(serverMediaSession),
+			      remoteClientNameOrAddress, remoteClientPortNum, url,
 			      responseHandler, authenticator,
 			      proxyURLSuffix);
   
-  delete authenticator; // we can do this here because it was copied to the "DeregisterRequestRecord"
+  delete[] (char*)url; // we can do this here because it was copied to the "DeregisterRequestRecord"
+  delete authenticator; // ditto
   return requestId;
 }
 
@@ -322,10 +326,11 @@ RTSPServerWithREGISTERProxying* RTSPServerWithREGISTERProxying
 	    unsigned reclamationSeconds,
 	    Boolean streamRTPOverTCP, int verbosityLevelForProxying,
 	    char const* backEndUsername, char const* backEndPassword) {
-  int ourSocket = setUpOurSocket(env, ourPort);
-  if (ourSocket == -1) return NULL;
+  int ourSocketIPv4 = setUpOurSocket(env, ourPort, AF_INET);
+  int ourSocketIPv6 = setUpOurSocket(env, ourPort, AF_INET6);
+  if (ourSocketIPv4 < 0 && ourSocketIPv6 < 0) return NULL;
   
-  return new RTSPServerWithREGISTERProxying(env, ourSocket, ourPort,
+  return new RTSPServerWithREGISTERProxying(env, ourSocketIPv4, ourSocketIPv6, ourPort,
 					    authDatabase, authDatabaseForREGISTER,
 					    reclamationSeconds,
 					    streamRTPOverTCP, verbosityLevelForProxying,
@@ -333,12 +338,12 @@ RTSPServerWithREGISTERProxying* RTSPServerWithREGISTERProxying
 }
 
 RTSPServerWithREGISTERProxying
-::RTSPServerWithREGISTERProxying(UsageEnvironment& env, int ourSocket, Port ourPort,
+::RTSPServerWithREGISTERProxying(UsageEnvironment& env, int ourSocketIPv4, int ourSocketIPv6, Port ourPort,
 				 UserAuthenticationDatabase* authDatabase, UserAuthenticationDatabase* authDatabaseForREGISTER,
 				 unsigned reclamationSeconds,
 				 Boolean streamRTPOverTCP, int verbosityLevelForProxying,
 				 char const* backEndUsername, char const* backEndPassword)
-  : RTSPServer(env, ourSocket, ourPort, authDatabase, reclamationSeconds),
+  : RTSPServer(env, ourSocketIPv4, ourSocketIPv6, ourPort, authDatabase, reclamationSeconds),
     fStreamRTPOverTCP(streamRTPOverTCP), fVerbosityLevelForProxying(verbosityLevelForProxying),
     fRegisteredProxyCounter(0), fAllowedCommandNames(NULL), fAuthDBForREGISTER(authDatabaseForREGISTER),
     fBackEndUsername(strDup(backEndUsername)), fBackEndPassword(strDup(backEndPassword)) {
@@ -364,7 +369,7 @@ Boolean RTSPServerWithREGISTERProxying
 		      char const* proxyURLSuffix, char*& responseStr) {
   // First, check whether we have already proxied a stream as "proxyURLSuffix":
   if (proxyURLSuffix != NULL) {
-    ServerMediaSession* sms = lookupServerMediaSession(proxyURLSuffix);
+    ServerMediaSession* sms = getServerMediaSession(proxyURLSuffix);
     if ((strcmp(cmd, "REGISTER") == 0 && sms != NULL) ||
 	(strcmp(cmd, "DEREGISTER") == 0 && sms == NULL)) {
       responseStr = strDup("451 Invalid parameter");
@@ -416,7 +421,8 @@ void RTSPServerWithREGISTERProxying
     envir() << "\tPlay this stream using the URL: " << proxyStreamURL << "\n";
     delete[] proxyStreamURL;
   } else { // "DEREGISTER"
-    deleteServerMediaSession(lookupServerMediaSession(proxyStreamName));
+    //    deleteServerMediaSession(lookupServerMediaSession(proxyStreamName));
+    lookupServerMediaSession(proxyStreamName, &GenericMediaServer::deleteServerMediaSession);
   }
 }
 

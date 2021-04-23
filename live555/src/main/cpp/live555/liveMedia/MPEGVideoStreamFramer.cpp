@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A filter that breaks up an MPEG video elementary stream into
 //   headers and frames
 // Implementation
@@ -63,8 +63,10 @@ void MPEGVideoStreamFramer::reset() {
   fTcSecsBase = 0;
   fHaveSeenFirstTimeCode = False;
 
-  // Use the current wallclock time as the base 'presentation time':
-  gettimeofday(&fPresentationTimeBase, NULL);
+  // Clear the 'presentation time base', as a signal for subclasses
+  // to reset it (to our current time) when we start (or resume) streaming:
+  fPresentationTimeBase.tv_sec = 0;
+  fPresentationTimeBase.tv_usec = 0;
 }
 
 #ifdef DEBUG

@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A generic RTSP client - for a single "rtsp://" URL
 // C++ header
 
@@ -29,6 +29,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #endif
 #ifndef _DIGEST_AUTHENTICATION_HH
 #include "DigestAuthentication.hh"
+#endif
+#ifndef _TLS_STATE_HH
+#include "TLSState.hh"
 #endif
 #ifndef OMIT_REGISTER_HANDLING
 #ifndef _RTSP_SERVER_HH
@@ -171,8 +174,8 @@ public:
 			      char const* sourceName,
 			      RTSPClient*& resultClient);
 
-  static Boolean parseRTSPURL(UsageEnvironment& env, char const* url,
-			      char*& username, char*& password, NetAddress& address, portNumBits& portNum, char const** urlSuffix = NULL);
+  Boolean parseRTSPURL(char const* url,
+		       char*& username, char*& password, NetAddress& address, portNumBits& portNum, char const** urlSuffix = NULL);
       // Parses "url" as "rtsp://[<username>[:<password>]@]<server-address-or-name>[:<port>][/<stream-name>]"
       // (Note that the returned "username" and "password" are either NULL, or heap-allocated strings that the caller must later delete[].)
 
@@ -186,6 +189,8 @@ public:
   unsigned sessionTimeoutParameter() const { return fSessionTimeoutParameter; }
 
   char const* url() const { return fBaseURL; }
+
+  void useTLS() { fTLS.isNeeded = True; }
 
   static unsigned responseBufferSize;
 
@@ -274,6 +279,7 @@ private:
   int openConnection(); // result values: -1: failure; 0: pending; 1: success
   char* createAuthenticatorString(char const* cmd, char const* url);
   char* createBlocksizeString(Boolean streamUsingTCP);
+  char* createKeyMgmtString(char const* url, MediaSubsession const& subsession);
   void handleRequestError(RequestRecord* request);
   Boolean parseResponseCode(char const* line, unsigned& responseCode, char const*& responseString);
   void handleIncomingRequest();
@@ -316,6 +322,10 @@ private:
   void incomingDataHandler1();
   void handleResponseBytes(int newBytesRead);
 
+  // Writing/reading data over a (already set-up) connection:
+  int write(const char* data, unsigned count);
+  int read(u_int8_t* buffer, unsigned bufferSize);
+
 public:
   u_int16_t desiredMaxIncomingPacketSize;
     // If set to a value >0, then a "Blocksize:" header with this value (minus an allowance for
@@ -326,7 +336,7 @@ protected:
   unsigned fCSeq; // sequence number, used in consecutive requests
   Authenticator fCurrentAuthenticator;
   Boolean fAllowBasicAuthentication;
-  netAddressBits fServerAddress;
+  struct sockaddr_storage fServerAddress;
 
 private:
   portNumBits fTunnelOverHTTPPortNum;
@@ -345,6 +355,10 @@ private:
   char fSessionCookie[33];
   unsigned fSessionCookieCounter;
   Boolean fHTTPTunnelingConnectionIsPending;
+
+  // Optional support for TLS:
+  TLSState fTLS;
+  friend class TLSState;
 };
 
 
@@ -365,7 +379,7 @@ public:
   portNumBits serverPortNum() const { return ntohs(fServerPort.num()); }
 
 protected:
-  HandlerServerForREGISTERCommand(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc, int ourSocket, Port ourPort,
+  HandlerServerForREGISTERCommand(UsageEnvironment& env, onRTSPClientCreationFunc* creationFunc, int ourSocketIPv4, int ourSocketIPv6, Port ourPort,
 				  UserAuthenticationDatabase* authDatabase, int verbosityLevel, char const* applicationName);
       // called only by createNew();
   virtual ~HandlerServerForREGISTERCommand();

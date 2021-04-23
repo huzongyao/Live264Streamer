@@ -15,8 +15,8 @@ JAVA_FUNC(getVersionInfo)(JNIEnv *env, jclass type) {
 JNIEXPORT jlong JNICALL
 JAVA_FUNC(createNew)(JNIEnv *env, jclass type) {
     TopStreamServer *server = TopStreamServer::createNew();
-    jlong pServer = (jlong) server;
-    LOGE("Server Created Instance[%lld]", pServer);
+    auto pServer = (jlong) server;
+    LOGE("Server Created Instance[%ld]", pServer);
     return pServer;
 }
 
@@ -24,13 +24,13 @@ JNIEXPORT jint JNICALL
 JAVA_FUNC(addUserRecord)(JNIEnv *env, jclass type, jlong instanceId, jstring userName_,
                          jstring password_) {
     int ret = 0;
-    const char *userName = env->GetStringUTFChars(userName_, 0);
-    const char *password = env->GetStringUTFChars(password_, 0);
+    auto *userName = env->GetStringUTFChars(userName_, nullptr);
+    auto *password = env->GetStringUTFChars(password_, nullptr);
     if (instanceId > 0) {
-        TopStreamServer *server = (TopStreamServer *) instanceId;
+        auto *server = (TopStreamServer *) instanceId;
         server->addUserRecord(userName, password);
     } else {
-        LOGE("No Instance On[%lld]", instanceId);
+        LOGE("No Instance On[%ld]", instanceId);
         ret = -1;
     }
     env->ReleaseStringUTFChars(userName_, userName);
@@ -40,13 +40,13 @@ JAVA_FUNC(addUserRecord)(JNIEnv *env, jclass type, jlong instanceId, jstring use
 
 JNIEXPORT jint JNICALL
 JAVA_FUNC(startServer)(JNIEnv *env, jclass type, jlong instanceId, jint port, jstring streamName_) {
-    int ret = 0;
-    const char *streamName = env->GetStringUTFChars(streamName_, 0);
+    int ret;
+    const char *streamName = env->GetStringUTFChars(streamName_, nullptr);
     if (instanceId > 0) {
-        TopStreamServer *server = (TopStreamServer *) instanceId;
+        auto *server = (TopStreamServer *) instanceId;
         ret = server->startServer(port, streamName);
     } else {
-        LOGE("No Instance On[%lld]", instanceId);
+        LOGE("No Instance On[%ld]", instanceId);
         ret = -1;
     }
     env->ReleaseStringUTFChars(streamName_, streamName);
@@ -55,12 +55,12 @@ JAVA_FUNC(startServer)(JNIEnv *env, jclass type, jlong instanceId, jint port, js
 
 JNIEXPORT jstring JNICALL
 JAVA_FUNC(getStreamUrl)(JNIEnv *env, jclass type, jlong instanceId) {
-    char *ret = NULL;
+    char *ret = nullptr;
     if (instanceId <= 0) {
-        LOGE("No Instance On[%lld]", instanceId);
+        LOGE("No Instance On[%ld]", instanceId);
     } else {
-        LOGE("getStreamUrl[%lld]", instanceId);
-        TopStreamServer *server = (TopStreamServer *) instanceId;
+        LOGE("getStreamUrl[%ld]", instanceId);
+        auto *server = (TopStreamServer *) instanceId;
         ret = server->getStreamUrl();
     }
     if (!ret) {
@@ -72,11 +72,11 @@ JAVA_FUNC(getStreamUrl)(JNIEnv *env, jclass type, jlong instanceId) {
 JNIEXPORT jint JNICALL
 JAVA_FUNC(doEventLoop)(JNIEnv *env, jclass type, jlong instanceId) {
     if (instanceId <= 0) {
-        LOGE("No Instance On[%lld]", instanceId);
+        LOGE("No Instance On[%ld]", instanceId);
         return -1;
     }
-    LOGE("Start Loop Instance[%lld]", instanceId);
-    TopStreamServer *server = (TopStreamServer *) instanceId;
+    LOGE("Start Loop Instance[%ld]", instanceId);
+    auto *server = (TopStreamServer *) instanceId;
     server->doEventLoop();
     return 0;
 }
@@ -85,13 +85,13 @@ JNIEXPORT jint JNICALL
 JAVA_FUNC(feedH264Data)(JNIEnv *env, jclass type, jlong instanceId, jbyteArray data_) {
     int ret = 0;
     if (instanceId > 0) {
-        TopStreamServer *server = (TopStreamServer *) instanceId;
+        auto *server = (TopStreamServer *) instanceId;
         int len = env->GetArrayLength(data_);
         char *buf = new char[len];
         env->GetByteArrayRegion(data_, 0, len, (jbyte *) buf);
         server->feedH264Data(buf, (unsigned int) len);
     } else {
-        LOGE("No Instance On[%lld]", instanceId);
+        LOGE("No Instance On[%ld]", instanceId);
         ret = -1;
     }
     return ret;
@@ -100,11 +100,11 @@ JAVA_FUNC(feedH264Data)(JNIEnv *env, jclass type, jlong instanceId, jbyteArray d
 JNIEXPORT jint JNICALL
 JAVA_FUNC(stopServer)(JNIEnv *env, jclass type, jlong instanceId) {
     if (instanceId <= 0) {
-        LOGE("No Instance On[%lld]", instanceId);
+        LOGE("No Instance On[%ld]", instanceId);
         return -1;
     }
-    LOGE("Stop Server Instance[%lld]", instanceId);
-    TopStreamServer *server = (TopStreamServer *) instanceId;
+    LOGE("Stop Server Instance[%ld]", instanceId);
+    auto *server = (TopStreamServer *) instanceId;
     server->stopServer();
     return 0;
 }

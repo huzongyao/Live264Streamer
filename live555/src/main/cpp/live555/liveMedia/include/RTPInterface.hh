@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // An abstraction of a network interface used for RTP (or RTCP).
 // (This allows the RTP-over-TCP hack (RFC 2326, section 10.12) to
 // be implemented transparently.)
@@ -40,18 +40,6 @@ typedef void ServerRequestAlternativeByteHandler(void* instance, u_int8_t reques
 // the same TCP connection.  A RTSP server implementation would supply a function like this - as a parameter to
 // "ServerMediaSubsession::startStream()".
 
-class tcpStreamRecord {
-public:
-  tcpStreamRecord(int streamSocketNum, unsigned char streamChannelId,
-		  tcpStreamRecord* next);
-  virtual ~tcpStreamRecord();
-
-public:
-  tcpStreamRecord* fNext;
-  int fStreamSocketNum;
-  unsigned char fStreamChannelId;
-};
-
 class RTPInterface {
 public:
   RTPInterface(Medium* owner, Groupsock* gs);
@@ -71,7 +59,7 @@ public:
                            handlerProc);
   Boolean handleRead(unsigned char* buffer, unsigned bufferMaxSize,
 		     // out parameters:
-		     unsigned& bytesRead, struct sockaddr_in& fromAddress,
+		     unsigned& bytesRead, struct sockaddr_storage& fromAddress,
 		     int& tcpSocketNum, unsigned char& tcpStreamChannelId,
 		     Boolean& packetReadWasIncomplete);
   // Note: If "tcpSocketNum" < 0, then the packet was received over UDP, and "tcpStreamChannelId"
@@ -106,7 +94,7 @@ private:
   friend class SocketDescriptor;
   Medium* fOwner;
   Groupsock* fGS;
-  tcpStreamRecord* fTCPStreams; // optional, for RTP-over-TCP streaming/receiving
+  class tcpStreamRecord* fTCPStreams; // optional, for RTP-over-TCP streaming/receiving
 
   unsigned short fNextTCPReadSize;
     // how much data (if any) is available to be read from the TCP stream

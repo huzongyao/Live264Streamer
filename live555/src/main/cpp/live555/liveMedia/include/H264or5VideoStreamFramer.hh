@@ -14,7 +14,7 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 **********/
 // "liveMedia"
-// Copyright (c) 1996-2019 Live Networks, Inc.  All rights reserved.
+// Copyright (c) 1996-2021 Live Networks, Inc.  All rights reserved.
 // A filter that breaks up a H.264 or H.265 Video Elementary Stream into NAL units.
 // C++ header
 
@@ -60,7 +60,7 @@ protected:
   void saveCopyOfSPS(u_int8_t* from, unsigned size);
   void saveCopyOfPPS(u_int8_t* from, unsigned size);
 
-  void setPresentationTime() { fPresentationTime = fNextPresentationTime; }
+  void setPresentationTime();
 
   Boolean isVPS(u_int8_t nal_unit_type);
   Boolean isSPS(u_int8_t nal_unit_type);
